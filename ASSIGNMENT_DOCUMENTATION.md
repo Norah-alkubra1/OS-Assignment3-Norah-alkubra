@@ -123,13 +123,9 @@ Ran the program again and verified final statistics, execution log count, and pr
 The first race condition exists in the shared counters such as contextSwitchCount and completedProcessCount. Multiple threads may update these variables at the same time, which can cause incorrect final values due to lost updates. The second race condition exists in the executionLog ArrayList because ArrayList is not thread-safe. Concurrent access may corrupt the internal structure of the list or cause inconsistent log entries. Without synchronization, the scheduler statistics may become inaccurate and program behavior may become unpredictable.
 
 
-ReentrantLock is used to provide mutual exclusion for critical sections. I used it to protect shared counters and executionLog because only one thread should modify them at a time. Semaphore is used to control access to limited resources. I used a binary semaphore with one permit to simulate one CPU core and ensure that only one process can execute CPU operations simultaneously.
 
 
-Deadlock occurs when multiple threads wait forever for resources held by each other. One prevention technique is using try-finally blocks to guarantee releasing locks and semaphores. Another technique is keeping synchronization simple and avoiding nested locks. In my code, I used finally blocks to always release locks and semaphores even if exceptions occur. This prevents resources from remaining locked permanently.
 
-
-.I used one ReentrantLock for all shared counters and execution log operations. I selected this approach because it keeps the synchronization logic simple and easier to manage. Using separate locks could improve concurrency because the counters are independent resources, but it would increase code complexity. Coarse-grained locking is easier to understand and reduces the possibility of synchronization mistakes. Fine-grained locking provides better performance in highly concurrent systems because different threads can access different resources simultaneously. For this assignment, one lock was sufficient and matched the assignment requirements.
 
 
 
@@ -144,6 +140,7 @@ Deadlock occurs when multiple threads wait forever for resources held by each ot
 **Q**: Explain the difference between ReentrantLock and Semaphore. Where did you use each in your code and why?
 
 **Your Answer**:
+ReentrantLock is used to provide mutual exclusion for critical sections. I used it to protect shared counters and executionLog because only one thread should modify them at a time. Semaphore is used to control access to limited resources. I used a binary semaphore with one permit to simulate one CPU core and ensure that only one process can execute CPU operations simultaneously.
 
 [Your answer here - explain your implementation choices]
 
@@ -153,6 +150,7 @@ Deadlock occurs when multiple threads wait forever for resources held by each ot
 **Q**: What is deadlock? Explain TWO prevention techniques and what you did to prevent deadlocks in your code.
 
 **Your Answer**:
+Deadlock occurs when multiple threads wait forever for resources held by each other. One prevention technique is using try-finally blocks to guarantee releasing locks and semaphores. Another technique is keeping synchronization simple and avoiding nested locks. In my code, I used finally blocks to always release locks and semaphores even if exceptions occur. This prevents resources from remaining locked permanently.
 
 [Your answer here - reference try-finally blocks, lock ordering, etc.]
 
@@ -167,6 +165,14 @@ Deadlock occurs when multiple threads wait forever for resources held by each ot
 
 **Your Answer**:
 
+
+
+
+
+
+.I used one ReentrantLock for all shared counters and execution log operations. I selected this approach because it keeps the synchronization logic simple and easier to manage. Using separate locks could improve concurrency because the counters are independent resources, but it would increase code complexity. Coarse-grained locking is easier to understand and reduces the possibility of synchronization mistakes. Fine-grained locking provides better performance in highly concurrent systems because different threads can access different resources simultaneously. For this assignment, one lock was sufficient and matched the assignment requirements.
+
+
 [Your answer here - explain coarse-grained vs fine-grained locking, independence of counters, concurrency implications. Show understanding of when to use each approach. 5-8 sentences expected.]
 
 ---
@@ -176,51 +182,61 @@ Deadlock occurs when multiple threads wait forever for resources held by each ot
 ### Critical Section #1: Counter Variables
 
 **Which variables**: 
-
+contextSwitchCount, completedProcessCount, totalWaitingTime
 **Why they need protection**: 
-
+contextSwitchCount, completedProcessCount, totalWaitingTime
 **Synchronization mechanism used**: 
-
+ReentrantLock
 **Code snippet**:
 ```java
 // Paste your implementation here
-```
+```lock.lock();
+
+try {
+    contextSwitchCount++;
+} finally {
+    lock.unlock();
+}
 
 **Justification**: 
-
+The lock ensures that only one thread updates shared counters at a time.
 ---
 
 ### Critical Section #2: Execution Log
 
 **What resource**: 
-
+executionLog ArrayList
 **Why it needs protection**: 
-
+ArrayList is not thread-safe and concurrent modifications may cause inconsistent data.
 **Synchronization mechanism used**: 
-
+ArrayList is not thread-safe and concurrent modifications may cause inconsistent data.
 **Code snippet**:
 ```java
 // Paste your implementation here
-```
+```lock.lock();
+
+try {
+    executionLog.add(message);
+} finally {
+    lock.unlock();
+}
 
 **Justification**: 
-
+The lock prevents simultaneous modification of the shared log list.
 ---
 
-### Critical Section #3: CPU Semaphore
+Critical Section #3: CPU Semaphore
+Purpose of semaphore: To control CPU access between processes.
+Number of permits and why: 1 permit because the scheduler simulates one CPU.
+Where implemented: Inside run() and runToCompletion() methods.
+Code snippet:
+try {
+    SharedResources.cpuSemaphore.acquire();
+} catch (InterruptedException e) {
+    e.printStackTrace();
+}
+Effect on program behavior: Only one process can execute the CPU section at a time, which prevents simultaneous acc
 
-**Purpose of semaphore**: 
-
-**Number of permits and why**: 
-
-**Where implemented**: 
-
-**Code snippet**:
-```java
-// Paste your implementation here
-```
-
-**Effect on program behavior**: 
 
 ---
 
@@ -228,52 +244,73 @@ Deadlock occurs when multiple threads wait forever for resources held by each ot
 
 ### Test 1: Consistency Check
 **What I tested**: Running program multiple times to verify consistent results
-
+Running program multiple times to verify consistent results.
 **Testing procedure**: 
 ```bash
+javac SchedulerSimulationSync.java
+java SchedulerSimulationSync
+java SchedulerSimulationSync
+java SchedulerSimulationSync
+java SchedulerSimulationSync
+java SchedulerSimulationSync
 # Commands used (run the program at least 5 times)
 ```
 
 **Results**: 
 (Show that running multiple times produces consistent, correct results)
-
+ The program produced consistent statistics and correct execution logs in all runs.
+Why synchronization is necessary: Without synchronization, multiple threads may update shared variables simultaneously, causing race conditions and incorrect results. Shared counters and executionLog require protection to ensure thread safety.
 **Why synchronization is necessary**: 
 (Explain what race conditions COULD occur without synchronization, even if you didn't observe them. Explain which shared resources need protection and why.)
+ Synchronization mechanisms successfully protected shared resources.
 
 **Conclusion**: 
+ Synchronization mechanisms successfully protected shared resources.
 
 ---
 
 ### Test 2: Exception Testing
 **What I tested**: Checking for ConcurrentModificationException
+Checking for ConcurrentModificationException Executed the program repeatedly while monitoring execution log behavior.\
 
+procedure
 **Testing procedure**: 
+Executed the program repeatedly while monitoring execution log behavior.\
 
 **Results**: 
-
+No ConcurrentModificationException occurred.
 **What this proves**: 
-
+The executionLog synchronization works correctly.
 ---
 
 ### Test 3: Correctness Verification
 **What I tested**: Verifying correct final values (total burst time, context switches, etc.)
-
+Verifying correct final values.
 **Expected values**: 
-
+All processes should complete successfully and statistics should remain consistent.
 **Actual values**: 
-
+The program completed all processes and displayed correct statistics.
 **Analysis**: 
+Synchronization protected all shared resources correctly.
 
 ---
 
 ### Test 4: Different Scenarios
 **Scenario tested**: [e.g., different time quantum, more processes, etc.]
-
+different process burst times and priorities.
 **Purpose**: 
+
+ To verify scheduler behavior under different workloads.
 
 **Results**: 
 
+
+he scheduler handled all processes correctly without synchronization issues.
+
 **What I learned**: 
+
+
+the scheduler handled all processes correctly without synchronization issues.
 
 ---
 
@@ -284,20 +321,20 @@ Deadlock occurs when multiple threads wait forever for resources held by each ot
 [6-8 sentences about key concepts, challenges, insights]
 
 ---
+I learned how race conditions occur in multithreaded systems when shared resources are accessed simultaneously. I understood the importance of critical sections and mutual exclusion. I learned how ReentrantLock protects shared variables and how Semaphore controls access to limited resources. I also learned why try-finally blocks are necessary to prevent deadlocks. This assignment improved my understanding of process synchronization in operating systems. It also showed how synchronization concepts are applied in real concurrent programs.
+
 
 ### Real-world applications:
 
 Give TWO examples where synchronization is critical:
-
-**Example 1**: 
-
-**Example 2**: 
+Example 1: Banking systems where multiple users access the same account balance.
+Example 2: Operating systems managing CPU access between multiple processes.
 
 ---
 
 ### How I would explain synchronization to others:
 
-[Explain to someone who just finished Assignment 1 - use simple terms and analogies]
+Synchronization is a way to organize multiple threads so they do not access shared resources at the same time. It is similar to allowing one person at a time to enter a restricted room. Locks and semaphores help prevent conflicts and keep data consistent. Without synchronization, programs may produce incorrect or unpredictable results.
 
 ---
 
