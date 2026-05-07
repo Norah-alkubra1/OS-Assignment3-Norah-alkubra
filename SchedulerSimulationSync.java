@@ -51,7 +51,15 @@ public static final Semaphore cpuSemaphore = new Semaphore(1);
     public static void incrementContextSwitch() {
         // TODO: Protect this critical section with a lock
         // RACE CONDITION: Multiple threads might read and write simultaneously!
-        contextSwitchCount++;
+    lock.lock();
+
+try {
+    contextSwitchCount++;
+} finally {
+    lock.unlock();
+}
+
+
     }
     
     // Method to increment completed process counter
