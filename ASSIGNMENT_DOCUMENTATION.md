@@ -1,8 +1,8 @@
 # Assignment 3 - Complete Documentation
 
-**Student Name**: [Your Full Name]  
-**Student ID**: [Your ID]  
-**Date Submitted**: [Submission Date]
+**Student Name**: [Norah alkubra ]  
+**Student ID**: [445052179]  
+**Date Submitted**: [May 7, 2026]
 
 ---
 
@@ -31,68 +31,83 @@
 
 Document your development process with **minimum 3 entries** showing progression:
 
-### Entry 1 - [Date, Time]
-**What I implemented**: 
 
+
+
+
+
+
+### Entry 1 - [     May 7, 2026 - 4:00 AM  ]
+**What I implemented**: 
+Updated my student ID and analyzed the scheduler code to identify shared resources and race conditions.
 **Challenges encountered**: 
 
 **How I solved it**: 
-
+I reviewed the code carefully and checked all variables modified by multiple processes.
 **Testing approach**: 
-
+Ran the program before synchronization to observe execution behavior.
 **Time spent**: 
-
+30 minutes
 ---
 
-### Entry 2 - [Date, Time]
-**What I implemented**: 
 
-**Challenges encountered**: 
+Entry 2 - May 7, 2026 - 4:45 AM
+What I implemented:
 
-**How I solved it**: 
+Added ReentrantLock to protect shared counters and execution log.
+Challenges encountered:
 
-**Testing approach**: 
+Making sure locks were released correctly.
+How I solved it:
+Used try-finally blocks for every critical section.
+Testing approach:
+Ran the program multiple times and checked consistency of final statistics.
+Time spent:
+45 minutes
 
-**Time spent**: 
 
----
 
-### Entry 3 - [Date, Time]
-**What I implemented**: 
+Entry 3 - May 7, 2026 - 5:30 AM
+What I implemented:
+Added binary semaphore for CPU synchronization in run() and runToCompletion() methods.
+Challenges encountered:
+Handling InterruptedException from semaphore acquire operation.
+How I solved it:
+Used nested try-catch blocks around acquire().
+Testing approach:
+Verified that only one process executes CPU section at a time.
+Time spent:
+40 minutes
 
-**Challenges encountered**: 
 
-**How I solved it**: 
+Entry 4 - May 7, 2026 - 6:15 AM
+What I implemented:
+Tested the final program and completed assignment documentation.
+Challenges encountered:
+Verifying all synchronization mechanisms worked correctly.
+How I solved it:
+Compared outputs from multiple runs and reviewed execution log results.
+Testing approach:
+Executed the program several times and checked statistics correctness.
+Time spent:
+35 minute
 
-**Testing approach**: 
+### Entry 5 - May 7, 2026 - 6:50 AM
 
-**Time spent**: 
+**What I implemented**:
+Reviewed the complete project, checked all TODO sections, and verified Git commits and final output.
 
----
+**Challenges encountered**:
+Ensuring that all synchronization code matched the assignment requirements without modifying the original scheduler logic.
 
-### Entry 4 - [Date, Time]
-**What I implemented**: 
+**How I solved it**:
+Carefully reviewed each synchronized section and tested the final version after all modifications.
 
-**Challenges encountered**: 
+**Testing approach**:
+Ran the program again and verified final statistics, execution log count, and process completion.
 
-**How I solved it**: 
-
-**Testing approach**: 
-
-**Time spent**: 
-
----
-
-### Entry 5 - [Date, Time]
-**What I implemented**: 
-
-**Challenges encountered**: 
-
-**How I solved it**: 
-
-**Testing approach**: 
-
-**Time spent**: 
+**Time spent**:
+20 minutes
 
 ---
 
@@ -105,8 +120,23 @@ Document your development process with **minimum 3 entries** showing progression
 - What incorrect behavior could occur?
 
 **Your Answer**:
+The first race condition exists in the shared counters such as contextSwitchCount and completedProcessCount. Multiple threads may update these variables at the same time, which can cause incorrect final values due to lost updates. The second race condition exists in the executionLog ArrayList because ArrayList is not thread-safe. Concurrent access may corrupt the internal structure of the list or cause inconsistent log entries. Without synchronization, the scheduler statistics may become inaccurate and program behavior may become unpredictable.
 
-[Your answer here - 4-6 sentences with code examples]
+
+ReentrantLock is used to provide mutual exclusion for critical sections. I used it to protect shared counters and executionLog because only one thread should modify them at a time. Semaphore is used to control access to limited resources. I used a binary semaphore with one permit to simulate one CPU core and ensure that only one process can execute CPU operations simultaneously.
+
+
+Deadlock occurs when multiple threads wait forever for resources held by each other. One prevention technique is using try-finally blocks to guarantee releasing locks and semaphores. Another technique is keeping synchronization simple and avoiding nested locks. In my code, I used finally blocks to always release locks and semaphores even if exceptions occur. This prevents resources from remaining locked permanently.
+
+
+.I used one ReentrantLock for all shared counters and execution log operations. I selected this approach because it keeps the synchronization logic simple and easier to manage. Using separate locks could improve concurrency because the counters are independent resources, but it would increase code complexity. Coarse-grained locking is easier to understand and reduces the possibility of synchronization mistakes. Fine-grained locking provides better performance in highly concurrent systems because different threads can access different resources simultaneously. For this assignment, one lock was sufficient and matched the assignment requirements.
+
+
+
+
+
+
+
 
 ---
 
